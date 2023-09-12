@@ -26,12 +26,14 @@ app.post('/token', async (req, res) => {
   console.log(req.body);
 
   // Retrieve parameters from the request body
-  const { client_id, code, redirect_uri } = req.body;
+  const { client_id, code, redirect_uri, code_verifier, client_secret } = req.body;
 
   // Check if the client_id is missing
   if (!client_id) {
     return res.status(400).send('Missing client_id');
   }
+
+  if(client_secret && client_secret !== context.A0_CLIENT_SECRET) return res.status(400).send('client auth failed by auth0!');
 
   // Check if the provided client_id matches the expected one
   if (context.RP_ID === client_id) {
@@ -39,6 +41,17 @@ app.post('/token', async (req, res) => {
       // Generate a client_assertion (JWT) for client authentication
       const client_assertion = await generatePrivateKeyJWTForClientAssertion(context);
       console.log(client_assertion);
+
+      var data = {
+        grant_type: 'authorization_code',
+        client_id: context.RP_ID,
+        client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+        client_assertion,
+        code,
+        redirect_uri
+      };
+
+      if (code_verifier) data.code_verifier = code_verifier;
 
       // Prepare the request to exchange the authorization code for tokens
       const options = {
@@ -50,6 +63,7 @@ app.post('/token', async (req, res) => {
           client_id: context.RP_ID,
           client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
           client_assertion,
+          code_verifier,
           code,
           redirect_uri
         }),
