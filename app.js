@@ -10,6 +10,7 @@ const relyingPartyJWKS = require('./spkis/relyingPartyJWKS.json');
 
 dotenv.config(); // Load environment variables from the .env file
 process.env.RP_ALG = process.env.RP_ALG || "RS256";
+const LOG = process.env.DEBUG === "true" ? console.log.bind(console) : function () {};
 
 const app = express(); // Create an Express application
 const port = 3000; // Define the port for the server to listen on
@@ -141,6 +142,6 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
   }
 }
 
-const LOG = context.DEBUG === "true" ? console.log.bind(console) : function () {};
+
 
 
