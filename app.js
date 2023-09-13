@@ -9,6 +9,7 @@ const qs = require('querystring'); // Query string parsing and formatting
 const relyingPartyJWKS = require('./spkis/relyingPartyJWKS.json');
 
 dotenv.config(); // Load environment variables from the .env file
+process.env.RP_ALG = process.env.RP_ALG || "RS256";
 
 const app = express(); // Create an Express application
 const port = 3000; // Define the port for the server to listen on
@@ -19,12 +20,10 @@ app.use(express.json());
 // Middleware to parse URL-encoded request bodies
 app.use(express.urlencoded({ extended: true }));
 
-
 // Create a route for the /token endpoint
 app.post('/token', async (req, res) => {
     const context = process.env;
-    context.USE = context.USE || "RS256";
-  console.log(req.body);
+    console.log(req.body);
 
   // Retrieve parameters from the request body
   const { client_id, code, redirect_uri, code_verifier, client_secret } = req.body;
@@ -109,8 +108,8 @@ app.listen(port, () => {
 // Function to load the RS256 private key
 async function loadPrivateKeyForClientAssertion(context) {
   try {
-    var privateKey = context[`RP_PRIVATE_KEY_${context.USE}`].replace(/\n/g, "\r\n");
-    var key = await importPKCS8(privateKey, context[`RP_ALG_${context.USE}`]);
+    var privateKey = context[`RP_PRIVATE_KEY_${context.RP_ALG}`].replace(/\n/g, "\r\n");
+    var key = await importPKCS8(privateKey, context.RP_ALG);
     return key;
   } catch (e) {
     console.log(e);
@@ -126,7 +125,7 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
     const key = await loadPrivateKeyForClientAssertion(context);
     console.log(key);
     const jwt = await new SignJWT({})
-      .setProtectedHeader({ alg: context[`RP_ALG_${context.USE}`], kid : context[`RP_KID_${context.USE}`] })
+      .setProtectedHeader({ alg: context.RP_ALG, kid : context[`RP_KID_${context.RP_ALG}`] })
       .setIssuedAt()
       .setIssuer(context.RP_ID)
       .setSubject(context.RP_ID)
