@@ -23,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Create a route for the /token endpoint
 app.post('/token', async (req, res) => {
     const context = process.env;
+    context.USE = context.USE || "RS256";
   console.log(req.body);
 
   // Retrieve parameters from the request body
@@ -108,8 +109,8 @@ app.listen(port, () => {
 // Function to load the RS256 private key
 async function loadPrivateKeyForClientAssertion(context) {
   try {
-    var privateKey = context.RP_PRIVATE_KEY_512.replace(/\n/g, "\r\n");
-    var key = await importPKCS8(privateKey, context.RP_ALG_512);
+    var privateKey = context[`RP_PRIVATE_KEY_${context.USE}`].replace(/\n/g, "\r\n");
+    var key = await importPKCS8(privateKey, context[`RP_ALG_${context.USE}`]);
     return key;
   } catch (e) {
     console.log(e);
@@ -125,7 +126,7 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
     const key = await loadPrivateKeyForClientAssertion(context);
     console.log(key);
     const jwt = await new SignJWT({})
-      .setProtectedHeader({ alg: context.RP_ALG_512, kid : context.RP_KID_512 })
+      .setProtectedHeader({ alg: context[`RP_ALG_${context.USE}`], kid : context[`RP_KID_${context.USE}`] })
       .setIssuedAt()
       .setIssuer(context.RP_ID)
       .setSubject(context.RP_ID)
