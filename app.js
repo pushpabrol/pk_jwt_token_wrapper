@@ -108,8 +108,8 @@ app.listen(port, () => {
 // Function to load the RS256 private key
 async function loadPrivateKeyForClientAssertion(context) {
   try {
-    var privateKey = context.RP_PRIVATE_KEY.replace(/\n/g, "\r\n");
-    var key = await importPKCS8(privateKey, context.RP_ALG);
+    var privateKey = context.RP_PRIVATE_KEY_512.replace(/\n/g, "\r\n");
+    var key = await importPKCS8(privateKey, context.RP_ALG_512);
     return key;
   } catch (e) {
     console.log(e);
@@ -125,7 +125,7 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
     const key = await loadPrivateKeyForClientAssertion(context);
     console.log(key);
     const jwt = await new SignJWT({})
-      .setProtectedHeader({ alg: context.RP_ALG})
+      .setProtectedHeader({ alg: context.RP_ALG_512, kid : context.RP_KID_512 })
       .setIssuedAt()
       .setIssuer(context.RP_ID)
       .setSubject(context.RP_ID)
