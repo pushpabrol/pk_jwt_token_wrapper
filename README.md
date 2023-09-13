@@ -24,7 +24,7 @@ This sample is setup to run on vercel. The `vercel.json` file sets up deployment
 
 ### 1. `/token` (POST)
 
-This endpoint is used for token exchange. Clients can send a request to exchange an authorization code for access tokens. The server will validate the request and, if valid, return the tokens.
+This endpoint is used as a wrapper on your IDPs token endpoint. Clients can send a request to exchange an authorization code for access tokens. The server will validate the request and, if valid, return the tokens.
 
 Example Request:
 ```json
