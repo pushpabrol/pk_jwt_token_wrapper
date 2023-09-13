@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Create a route for the /token endpoint
 app.post('/token', async (req, res) => {
     const context = process.env;
-    console.log(req.body);
+    LOG(req.body);
 
   // Retrieve parameters from the request body
   const { client_id, code, redirect_uri, code_verifier, client_secret } = req.body;
@@ -40,7 +40,7 @@ app.post('/token', async (req, res) => {
     try {
       // Generate a client_assertion (JWT) for client authentication
       const client_assertion = await generatePrivateKeyJWTForClientAssertion(context);
-      console.log(client_assertion);
+      LOG(client_assertion);
 
       var data = {
         grant_type: 'authorization_code',
@@ -71,7 +71,7 @@ app.post('/token', async (req, res) => {
 
       // Send the token exchange request to the authorization server
       const response = await axios.request(options);
-      console.log(response.data);
+      LOG(response.data);
 
         // Send the response with the updated id_token
         return res.status(200).send(response.data);
@@ -100,7 +100,7 @@ app.get('/.well-known/keys', async (req, res) => {
 
 // Start the Express server and listen on the specified port
 app.listen(port, () => {
-    console.log(`Server is listening at http://localhost:${port}`);
+    LOG(`Server is listening at http://localhost:${port}`);
   });
 
 
@@ -112,7 +112,7 @@ async function loadPrivateKeyForClientAssertion(context) {
     var key = await importPKCS8(privateKey, context.RP_ALG);
     return key;
   } catch (e) {
-    console.log(e);
+    LOG(e);
     return e;
   }
 }
@@ -123,7 +123,7 @@ async function loadPrivateKeyForClientAssertion(context) {
 async function generatePrivateKeyJWTForClientAssertion(context) {
   try {
     const key = await loadPrivateKeyForClientAssertion(context);
-    console.log(key);
+    LOG(key);
     const jwt = await new SignJWT({})
       .setProtectedHeader({ alg: context.RP_ALG, kid : context[`RP_KID_${context.RP_ALG}`] })
       .setIssuedAt()
@@ -133,15 +133,14 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
       .setExpirationTime('2m') // Expiration time
       .setJti(uuid.v4())
       .sign(key);
-    console.log(jwt);
+    //LOG(jwt);
     return jwt;
   } catch (error) {
-    console.log(error);
+    LOG(error);
     return error;
   }
 }
 
-
-
+const LOG = context.DEBUG === "true" ? console.log.bind(console) : function () {};
 
 
