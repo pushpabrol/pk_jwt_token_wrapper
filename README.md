@@ -1,6 +1,6 @@
 # Token Endpoint Wrapper for Private Key JWT Client Authentication
 
-This repository contains a Node.js-based Token Endpoint Wrapper for Private Key JWT to be used as part of an auth0 OIDC connection for an IDP that requires client authentication on token endpoint via private_key_jwt
+This repository contains a Node.js-based Token Endpoint Wrapper for Private Key JWT assertion to be used as part of an auth0 OIDC connection for an IDP that requires client authentication on token endpoint via private_key_jwt
 
 ## Prerequisites
 
