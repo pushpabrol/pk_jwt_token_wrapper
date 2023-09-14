@@ -64,15 +64,15 @@ Before running the server, configure the required environment variables in the `
 - `DEBUG` - false or true
 
 
-Ensure that the `RP_PRIVATE_KEY_ALG` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
+Ensure that the `RP_PRIVATE_KEY_RS256` and/or `RP_PRIVATE_KEY_RS512` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
 
-In the env file the `RP_PRIVATE_KEY_ALG` is the PKCS8 formatted Private key with newlines replaced with `\n`
+In the env file the `RP_PRIVATE_KEY_RS256` or `RP_PRIVATE_KEY_RS512` is the PKCS8 formatted Private key with newlines replaced with `\n` . Example ....-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1dsvQ6S79NM+U\n...gEFVWzotcHeRbyso8nNEeF10JBPY2qvNOveLsV9WFQhwG6+vFtski1VpjYpucjaN\nadx4UD2Hw8MYvwdkG7BpFA==\n-----END PRIVATE KEY-----\n
 
-The `spkis/relyingPartyJWKS.json` file contains the public key(s) in jwks format that gets exposed as /.well-known/keys for the IDP to use for client assertion verification. If your IDP uses `jwks_uri` for client assertion validation this url can be used or else you can share the public key with them based on that jwks in this file. Make sure you set the contents of this file based on the public keys you have
+The `spkis/relyingPartyJWKS.json` file contains the public key(s) in jwks format that gets exposed as /.well-known/keys for the IDP to use for client assertion verification. If your IDP uses `jwks_uri` for client assertion validation this url can be used or else you can share the public key with them based on that jwks in this file. Make sure you set the contents of this file based on the public keys you have for client asertion validation by the IDP
 
 ## Use in Auth0 connection ( Example)
 
-Create a connection in auth0 using the management API 
+Create a connection in auth0 using the Auth0 management API 
 
 Assume your IDP's url is https://idp.com
 
