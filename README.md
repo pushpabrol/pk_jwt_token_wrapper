@@ -52,20 +52,23 @@ GET /.well-known/keys
 
 Before running the server, configure the required environment variables in the `.env` file or in vercel. Here are the environment variables you need to set:
 
-- `RP_ID`: Your relying party's client id.
-- `IDP_DOMAIN`: The domain of the identity provider.
-- `IDP_TOKEN_ENDPOINT`: The token endpoint URL of the identity provider. Example `/token`
-- `A0_CLIENT_SECRET`: The client secret for client authentication.
-- `RP_PRIVATE_KEY`: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1dsvQ6S79NM+U\n...\n-----END PRIVATE KEY-----\n"
-- `RP_KID`: ...
-- `RP_ALG`: =RS256
+- `RP_ID` - <Client_id from the IDP>
+- `A0_CLIENT_SECRET` - <a client secret you use in the token wrapper to make sure its only called from auth0 ( shared secret with auth0)>
+- `RP_PRIVATE_KEY_RS256` - "pkcs8 formattted private key - RS256"
+- `RP_PRIVATE_KEY_RS512` - "pkcs8 formattted private key - RS512"
+- `RP_KID_RS256` - <kid for RS256>
+- `RP_KID_RS512` - <kid for RS512>
+- `IDP_DOMAIN` - domain of your IDP
+- `IDP_TOKEN_ENDPOINT` - path of your IDP's token endpoint relative to the domains based url - /token
+- `RP_ALG` - RS256 or RS512
+- `DEBUG` - false or true
 
 
-Ensure that the `RP_PRIVATE_KEY` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
+Ensure that the `RP_PRIVATE_KEY_ALG` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
 
-The `RP_PRIVATE_KEY` is the PKCS8 formatted Private key with newlines replaced with `\n`
+In the env file the `RP_PRIVATE_KEY_ALG` is the PKCS8 formatted Private key with newlines replaced with `\n`
 
-The `spkis/relyingPartyJWKS.json` file contains the public key(s) in jwks format that gets exposed as /.well-known/keys for the IDP to use for client assertion verification. If your IDP uses `jwks_uri` for client assertion validation this url can be used or else you can share the public key with them based on that jwks in this file.
+The `spkis/relyingPartyJWKS.json` file contains the public key(s) in jwks format that gets exposed as /.well-known/keys for the IDP to use for client assertion verification. If your IDP uses `jwks_uri` for client assertion validation this url can be used or else you can share the public key with them based on that jwks in this file. Make sure you set the contents of this file based on the public keys you have
 
 ## Use in Auth0 connection ( Example)
 
