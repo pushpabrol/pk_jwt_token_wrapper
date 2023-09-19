@@ -41,7 +41,7 @@ POST /token
 
 ### 2. `/.well-known/keys` (GET)
 
-This endpoint provides an ES256 public key for client authentication. It's used by the relying party of the IDP to verify client assertions.
+This endpoint provides the public keys for client authentication. It's used by the relying party of the IDP to verify client assertions. In this example it has keys for both RS256 and RS512.
 
 Example Request:
 ```json
