@@ -75,12 +75,12 @@ app.post('/token', async (req, res) => {
       // Send the token exchange request to the authorization server
       const response = await axios.request(options);
       LOG(response.data);
-
+      if(context.RP_ALG !== "RS256")
+      {
       // Extract the id_token from the response
       const { id_token } = response.data;
 
-
-      const publicKeyIDP = createRemoteJWKSet(new URL(`https://${context.IDP_DOMAIN}/jwks`))
+      const publicKeyIDP = createRemoteJWKSet(new URL(`https://${context.IDP_DOMAIN}${context.IDP_JWKS_ENDPOINT}`))
 
       // Verify the id_token with the public key
       const { payload, protectedHeader } = await jwtVerify(id_token, publicKeyIDP, {
@@ -106,7 +106,7 @@ app.post('/token', async (req, res) => {
       // Generate an RS256 token from the payload for auth0
       const jwt = await generateRS256Token(payload, context);
       response.data.id_token = jwt;
-
+    }
       // Send the response with the updated id_token
       return res.status(200).send(response.data);
 

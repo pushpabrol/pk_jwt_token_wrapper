@@ -46,6 +46,17 @@ This endpoint provides the public keys for client authentication. It's used by t
 Example Request:
 ```json
 GET /.well-known/keys
+
+```
+
+### 3. `/intermediary.jwks` (GET)
+
+This endpoint provides the public keys for the Auth0 Connection to use as the JWKS endpoint. Since the IDP is sending a token signed with RS512 the wrapper verifies the tokens, makes all the checks etc and then creates a new token signed with RS256. To verify this token auth0 needs a jwks and this url provides that. We will also update the connection to use this as the JWKs instead of the one provided by the IDP
+
+Example Request:
+```json
+GET /.well-known/keys
+
 ```
 
 ## Configuration
@@ -62,13 +73,19 @@ Before running the server, configure the required environment variables in the `
 - `IDP_TOKEN_ENDPOINT` - path of your IDP's token endpoint relative to the domains based url - /token
 - `RP_ALG` - RS256 or RS512
 - `DEBUG` - false or true
+- `INTERMEDIARY_PRIVATE_KEY` - "pkcs8 formattted private key - RS256, used by the wrapper to sign the token with RS256 for auth0 connection"
+- `INTERMEDIARY_KEY_KID` - "kid for RS256 intermediary"
+- `INTERMEDIARY_SIGNING_ALG` - RS256 <for auth0 this is RS256>
+- `IDP_JWKS_ENDPOINT` - path of your IDP jwks endpoint relative to the domains based url - /.well-known/jwks.json
 
 
-Ensure that the `RP_PRIVATE_KEY_RS256` and/or `RP_PRIVATE_KEY_RS512` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
+Ensure that the `RP_PRIVATE_KEY_RS256` and/or `RP_PRIVATE_KEY_RS512` `INTERMEDIARY_PRIVATE_KEY` `INTERMEDIARY_KEY_KID` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
 
 In the env file the `RP_PRIVATE_KEY_RS256` or `RP_PRIVATE_KEY_RS512` is the PKCS8 formatted Private key with newlines replaced with `\n` . Example ....-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1dsvQ6S79NM+U\n...gEFVWzotcHeRbyso8nNEeF10JBPY2qvNOveLsV9WFQhwG6+vFtski1VpjYpucjaN\nadx4UD2Hw8MYvwdkG7BpFA==\n-----END PRIVATE KEY-----\n
 
 The `spkis/relyingPartyJWKS.json` file contains the public key(s) in jwks format that gets exposed as /.well-known/keys for the IDP to use for client assertion verification. If your IDP uses `jwks_uri` for client assertion validation this url can be used or else you can share the public key with them based on that jwks in this file. Make sure you set the contents of this file based on the public keys you have for client asertion validation by the IDP
+
+The `spkis/intermediaryJWKS.json` file contains the public key(s) in jwks format that gets exposed as `/intermediary.jwks` for Auth0 to use for token verification of the RS256 token created in the wrapper
 
 ## Use in Auth0 connection ( Example)
 
@@ -82,7 +99,7 @@ Assume your IDP's url is https://idp.com
     "type": "back_channel",
     "scope": "openid profile email",
     "issuer": "https://idp.com",
-    "jwks_uri": "https://idp.com/jwks",
+    "jwks_uri": "https://<your token wrapper's domain>/intermediary.jwks",
     "client_id": "client_pk_kwt",
     "attribute_map": {
       "mapping_mode": "bind_all"
