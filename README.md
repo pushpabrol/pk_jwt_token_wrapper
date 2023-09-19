@@ -71,7 +71,8 @@ Before running the server, configure the required environment variables in the `
 - `RP_KID_RS512` - <kid for RS512>
 - `IDP_DOMAIN` - domain of your IDP
 - `IDP_TOKEN_ENDPOINT` - path of your IDP's token endpoint relative to the domains based url - /token
-- `RP_ALG` - RS256 or RS512
+- `IDP_TOKEN_SIGNING_ALG` - Algorithm used by the IDP to sign the id_token
+- `RP_CLIENT_ASSERTION_SIGNING_ALG` - Algorithm used by the RP/this wrapper to sign the client authentication assertion
 - `DEBUG` - false or true
 - `INTERMEDIARY_PRIVATE_KEY` - "pkcs8 formattted private key - RS256, used by the wrapper to sign the token with RS256 for auth0 connection"
 - `INTERMEDIARY_KEY_KID` - "kid for RS256 intermediary"
@@ -79,7 +80,9 @@ Before running the server, configure the required environment variables in the `
 - `IDP_JWKS_ENDPOINT` - path of your IDP jwks endpoint relative to the domains based url - /.well-known/jwks.json
 
 
-Ensure that the `RP_PRIVATE_KEY_RS256` and/or `RP_PRIVATE_KEY_RS512` `INTERMEDIARY_PRIVATE_KEY` `INTERMEDIARY_KEY_KID` and `RP_ALG` environment variables are set according to your private key and algorithm used for generating client assertions.
+Ensure that the `RP_PRIVATE_KEY_RS256` and/or `RP_PRIVATE_KEY_RS512` `INTERMEDIARY_PRIVATE_KEY` `INTERMEDIARY_KEY_KID` and `RP_CLIENT_ASSERTION_SIGNING_ALG`  environment variables are set according to your private key and algorithm used for generating client assertions.
+
+Ensure that the `IDP_TOKEN_SIGNING_ALG` is set to what matches the IDP uses for signing the id_token
 
 In the env file the `RP_PRIVATE_KEY_RS256` or `RP_PRIVATE_KEY_RS512` is the PKCS8 formatted Private key with newlines replaced with `\n` . Example ....-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1dsvQ6S79NM+U\n...gEFVWzotcHeRbyso8nNEeF10JBPY2qvNOveLsV9WFQhwG6+vFtski1VpjYpucjaN\nadx4UD2Hw8MYvwdkG7BpFA==\n-----END PRIVATE KEY-----\n
 
