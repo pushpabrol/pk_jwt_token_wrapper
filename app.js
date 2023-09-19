@@ -5,6 +5,7 @@ const axios = require('axios'); // HTTP client for making requests
 const uuid = require('uuid'); // Universally Unique Identifier (UUID) generator
 const dotenv = require('dotenv'); // Load environment variables from a .env file
 const qs = require('querystring'); // Query string parsing and formatting
+const oidcTokenHash = require('oidc-token-hash');
 
 const relyingPartyJWKS = require('./spkis/relyingPartyJWKS.json');
 const intermediaryJWKS = require('./spkis/intermediaryJWKS.json');
@@ -91,6 +92,14 @@ app.post('/token', async (req, res) => {
       LOG(protectedHeader);
       // Remove the nonce from the payload and replace the id_token with a new RS256 token
       if (payload.nonce) delete payload.nonce;
+      if(payload.at_hash && response.data.access_token) {
+        const at_hashCalc = oidcTokenHash.generate(response.data.access_token, protectedHeader.alg);
+        LOG(at_hashCalc);
+        if(at_hashCalc === payload.at_hash) {
+            const at_hashCalcRS256 = oidcTokenHash.generate(response.data.access_token, "RS256");
+            payload.at_hash = at_hashCalcRS256;
+        } else return res.status(500).send(`at_hash mismatch, expected ${payload.at_hash} , got: ${at_hashCalc}`);
+      }
       response.data.payload = payload;
       delete response.data.id_token;
 
