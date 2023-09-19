@@ -55,7 +55,7 @@ This endpoint provides the public keys for the Auth0 Connection to use as the JW
 
 Example Request:
 ```json
-GET /.well-known/keys
+GET /intermediary.jwks
 
 ```
 
