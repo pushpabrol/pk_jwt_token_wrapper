@@ -180,7 +180,7 @@ async function generateRS256Token(payload, context) {
         .setProtectedHeader({ alg: context.INTERMEDIARY_SIGNING_ALG, kid: context.INTERMEDIARY_KEY_KID, typ: "JWT" })
         .setIssuedAt()
         .setIssuer(`https://${context.IDP_DOMAIN}`)
-        .setAudience(context.IDP_CLIENT_ID)
+        .setAudience(context.RP_ID)
         .setExpirationTime('2m') // Expiration time
         .setJti(uuid.v4())
         .sign(key);
