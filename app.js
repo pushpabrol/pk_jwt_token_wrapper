@@ -1,6 +1,6 @@
 // Import required Node.js modules and libraries
 const express = require('express');
-const { SignJWT, importPKCS8 } = require('jose'); // JSON Object Signing and Encryption (JOSE) library
+const { SignJWT, importPKCS8, jwtVerify, createRemoteJWKSet } = require('jose');  // JSON Object Signing and Encryption (JOSE) library
 const axios = require('axios'); // HTTP client for making requests
 const uuid = require('uuid'); // Universally Unique Identifier (UUID) generator
 const dotenv = require('dotenv'); // Load environment variables from a .env file
