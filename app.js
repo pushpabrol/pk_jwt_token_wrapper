@@ -7,6 +7,7 @@ const dotenv = require('dotenv'); // Load environment variables from a .env file
 const qs = require('querystring'); // Query string parsing and formatting
 
 const relyingPartyJWKS = require('./spkis/relyingPartyJWKS.json');
+const intermediaryJWKS = require('./spkis/intermediaryJWKS.json');
 
 dotenv.config(); // Load environment variables from the .env file
 process.env.RP_ALG = process.env.RP_ALG || "RS256";
@@ -74,8 +75,32 @@ app.post('/token', async (req, res) => {
       const response = await axios.request(options);
       LOG(response.data);
 
-        // Send the response with the updated id_token
-        return res.status(200).send(response.data);
+      // Extract the id_token from the response
+      const { id_token } = response.data;
+
+
+      const publicKeyIDP = createRemoteJWKSet(new URL(`https://${context.IDP_DOMAIN}/jwks`))
+
+      // Verify the id_token with the public key
+      const { payload, protectedHeader } = await jwtVerify(id_token, publicKeyIDP, {
+        issuer: `https://${context.IDP_DOMAIN}`,
+        audience: context.IDP_CLIENT_ID,
+      });
+
+      LOG(payload);
+      LOG(protectedHeader);
+      // Remove the nonce from the payload and replace the id_token with a new RS256 token
+      if (payload.nonce) delete payload.nonce;
+      response.data.payload = payload;
+      delete response.data.id_token;
+
+      // Generate an RS256 token from the payload for auth0
+      const jwt = await generateRS256Token(payload, context);
+      response.data.id_token = jwt;
+
+      // Send the response with the updated id_token
+      return res.status(200).send(response.data);
+
       
     } catch (error) {
       if (error.response) {
@@ -98,6 +123,9 @@ app.get('/.well-known/keys', async (req, res) => {
   res.json(relyingPartyJWKS);
 });
 
+app.get('/intermediary.jwks', async (req, res) => {
+    res.json(intermediaryJWKS);
+  });
 
 // Start the Express server and listen on the specified port
 app.listen(port, () => {
@@ -141,6 +169,40 @@ async function generatePrivateKeyJWTForClientAssertion(context) {
     return error;
   }
 }
+
+// Function to generate an RS256 token by the intermediary
+async function generateRS256Token(payload, context) {
+    if (payload.nonce) delete payload.nonce;
+    try {
+      const key = await loadRS256PrivateKey(context);
+      console.log(key);
+      const jwt = await new SignJWT(payload)
+        .setProtectedHeader({ alg: context.INTERMEDIARY_SIGNING_ALG, kid: context.INTERMEDIARY_KEY_KID, typ: "JWT" })
+        .setIssuedAt()
+        .setIssuer(`https://${context.IDP_DOMAIN}`)
+        .setAudience(context.IDP_CLIENT_ID)
+        .setExpirationTime('2m') // Expiration time
+        .setJti(uuid.v4())
+        .sign(key);
+      console.log(jwt);
+      return jwt;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  // Function to load the RS256 private key
+async function loadRS256PrivateKey(context) {
+    try {
+      var privateKey = context.INTERMEDIARY_PRIVATE_KEY.replace(/\n/g, "\r\n");
+      var key = await importPKCS8(privateKey, context.INTERMEDIARY_SIGNING_ALG);
+      return key;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
 
 
 
